@@ -1,0 +1,59 @@
+name: Setup and Run toncli
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  setup-and-run:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Check out the code
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # Cập nhật apt-get và cài các phụ thuộc cần thiết
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3.10 python3.10-venv python3.10-dev
+          sudo apt-get install -y build-essential cmake git clang llvm libssl-dev libcurl4-openssl-dev libboost-all-dev
+
+      # Cài Python và tạo môi trường ảo
+      - name: Setup Python environment
+        run: |
+          python3.10 -m venv venv
+          source venv/bin/activate
+          pip install --upgrade pip
+          pip install toncli
+
+      # Kiểm tra phiên bản toncli
+      - name: Check toncli version
+        run: |
+          source venv/bin/activate
+          toncli --version
+
+      # (Tuỳ chọn) Tạo dự án mới bằng toncli
+      - name: Run toncli start
+        run: |
+          source venv/bin/activate
+          toncli start my_project
+
+      # (Tuỳ chọn) Build hợp đồng
+      - name: Run toncli build
+        run: |
+          source venv/bin/activate
+          cd my_project
+          toncli build
+
+      # (Tuỳ chọn) Deploy hợp đồng lên testnet
+      - name: Deploy contract to testnet
+        run: |
+          source venv/bin/activate
+          cd my_project
+          toncli deploy --network testnet
